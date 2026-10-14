@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#16140f" media="(prefers-color-scheme:dark)">
+<title>释放法 · 自走引导</title><!-- RELEASE_METHOD -->
+<style>
+  :root{--ink:#2b271f;--muted:#8a8377;--paper:#faf8f4;--line:#e2dccf;--accent:#b08d4f}
+  @media(prefers-color-scheme:dark){:root{--ink:#e8e3d9;--muted:#8f8880;--paper:#16140f;--line:#2c2822;--accent:#c9a45f}}
+  html,body{height:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:15px/1.8 Georgia,"Songti SC","Noto Serif SC",serif;-webkit-font-smoothing:antialiased}
+  .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:28px 24px;box-sizing:border-box;text-align:center}
+  .mark{font-size:30px;letter-spacing:6px}
+  .sub{font-size:11px;letter-spacing:4px;color:var(--muted);margin-top:4px}
+  .spin{margin-top:26px;width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--accent);
+    border-radius:50%;animation:r .9s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .tip{margin-top:20px;color:var(--muted);font-size:13px;max-width:30em}
+  .btn{margin-top:18px;background:var(--accent);color:#fff;border:none;border-radius:9px;
+    padding:10px 20px;font:inherit;font-size:14px;cursor:pointer}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mark" style="letter-spacing:4px">释放法</div>
+  <div class="sub">RELEASE</div>
+  <div class="spin" id="spin"></div>
+  <div class="tip" id="tip">正在打开最新版…</div>
+</div>
+<script>
+/* 云端固定入口。这片薄页**永不改动**：每次进来现查同源的 apprel/web.json 拿最新内容包 code，
+   再换成那一份页面。所以手机浏览器、电脑书签只记这一个网址就够了，发新版不用改地址。
+   （App 走的是另外两条路：壳读 app/version.json，界面读 apprel/web.json 下到本地，都不经过这里。） */
+(function(){
+  var tip=document.getElementById('tip'), spin=document.getElementById('spin');
+  function stop(){ if(spin) spin.style.display='none'; }
+  function die(msg){
+    stop(); tip.textContent='';
+    var a=document.createElement('a'); a.href='apprel/web.json'; a.textContent='apprel/web.json';
+    tip.appendChild(document.createTextNode(msg+'　'));
+    tip.appendChild(a);
+    var b=document.createElement('button'); b.className='btn'; b.textContent='重试';
+    b.onclick=function(){ location.reload(); };
+    tip.appendChild(document.createElement('br')); tip.appendChild(b);
+  }
+  /* 只允许纯数字进 URL，清单被人改坏也跳不到别处去 */
+  function go(code){
+    var c=String(code||'');
+    if(!/^\d{1,6}$/.test(c)){ die('云端清单里的版本号不合法。'); return; }
+    stop(); tip.textContent='打开 code '+c+' …';
+    location.replace('app/web/'+c+'/index.html');
+  }
+  try{
+    fetch('apprel/web.json?_='+Date.now(),{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){ go(j&&j.code); })
+      .catch(function(){ die('取不到云端清单（网络不通或还没发布过）。清单一览：'); });
+  }catch(e){ die('这台设备的浏览器不支持打开固定入口。'); }
+})();
+</script>
+<noscript><div class="tip" style="margin-top:22px">浏览器禁用了脚本，请<a href="apprel/web.json">从这份清单里挑最新版页面</a>。</div></noscript>
+</body>
+</html>

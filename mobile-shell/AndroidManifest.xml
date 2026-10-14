@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.venus.releaseapp">
+    <!-- 版本号只在 build-apk.py 里写：manifest 自带 versionCode 会静默盖掉
+         aapt2 link 传入的版本参数，结果发了新包系统却认为是同一版装不上。 -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <!-- App 内更新要拉起系统安装器。这条只声明不授权：装了之后人在
+         Settings→安装未知应用 里点一次「信任」才生效，源码里会把人一键送到那个开关。 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 下载好的升级包交给系统安装器：Android 7 起不给 file:// 的 URI，
+             只能这么过一道。exported=false + grantUriPermissions=true，
+             意思是只有我们临时授权的那一次、那一个文件读得到。 -->
+        <provider
+            android:name=".UpdateProvider"
+            android:authorities="com.venus.releaseapp.update"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+    </application>
+</manifest>

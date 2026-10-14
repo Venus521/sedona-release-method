@@ -1,0 +1,21 @@
+# ── 构建产物（可本地重建，不入库 / build outputs, regenerable）──
+mobile-shell/dist/
+mobile-shell/dist-public/
+mobile-shell/assets/
+mobile-shell/assets-pub/
+mobile-shell/__pycache__/
+*.pyc
+
+# ── 密钥与凭据：绝不入库 / secrets & credentials — never commit ──
+mobile-shell/keystore/
+mobile-shell/坚果云凭据.json
+
+# ── 私有发布脚本（自用云端货架，不对外）/ private publishing scripts ──
+mobile-shell/发布*.py
+mobile-shell/坚果云*.py
+mobile-shell/手机安装入口.py
+mobile-shell/_backup_*/
+
+# ── 仓库内部临时辅助脚本 / local repo helpers ──
+_copy_helper.py
+_copy_mobile.py
