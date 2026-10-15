@@ -353,7 +353,8 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView v, String u) {
             pageOk = true;
-            checkUpdateOnce();
+            /* 2026-10-15：启动自动检查撤了——更新只由页内「检查更新」钮发起（直查 GitHub），
+               壳不再在后台连任何服务器。 */
         }
 
         @Override
@@ -524,6 +525,16 @@ public class MainActivity extends Activity {
             runUpdateCheck(true);
         }
 
+        /** 页内「检查更新」要比版本，把壳自己的 versionName 递过去。 */
+        @JavascriptInterface
+        public String appVersion() {
+            try {
+                return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
         @JavascriptInterface
         public void checkContent() {
             runContentCheck(true);
@@ -535,11 +546,6 @@ public class MainActivity extends Activity {
             return String.valueOf(getSharedPreferences("shell", MODE_PRIVATE).getInt("web_code", 0));
         }
 
-        @JavascriptInterface
-        public String appVersion() {
-            return Updater.currentName(MainActivity.this) + '（'
-                    + Updater.currentCode(MainActivity.this) + '）';
-        }
 
         @JavascriptInterface
         public void toast(final String msg) {

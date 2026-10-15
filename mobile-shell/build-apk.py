@@ -21,8 +21,8 @@ JDK = os.path.join(ROOT, 'jdk-17.0.20.1+1')
 BT = os.path.join(ROOT, r'sdk\build-tools\34.0.0')
 ANDROID_JAR = os.path.join(ROOT, r'sdk\platforms\android-34\android.jar')
 
-SRC = r'D:\项目\04_创作写作\release-method\mobile-shell'
-WEB = os.path.dirname(SRC)            # 项目根：这份释放法要整个打进 APK
+SRC = os.path.dirname(os.path.abspath(__file__))   # 本仓 mobile-shell（2026-10-15 起发布仓自成一线，不再读开发仓）
+WEB = os.path.dirname(SRC)            # 本仓根：index.html 直接用发布仓这份
 BUILD = r'D:\dev\rel-shell-build'      # 纯 ASCII
 
 # --public 分支：网页资源从 dist-public/web 取、产物另落 dist-public，版本号跟着分发版走
@@ -33,8 +33,8 @@ MIN_API = '21'
 # ⚠️ 改了网页内容就必须把 VERSION_CODE 加一。
 # WebUpdater.currentRoot() 只在 APK versionCode 变化时才作废设备上那份热更网页；
 # 版本号不动的话，用户装上新版 APK 仍会加载上次热更的旧页面——表现为「装了新包但界面没变」。
-VERSION_CODE = '25' if PUBLIC else '51'
-VERSION_NAME = '3.4' if PUBLIC else '5.10'
+VERSION_CODE = '26' if PUBLIC else '51'
+VERSION_NAME = '3.5' if PUBLIC else '5.10'
 APK_NAME = 'ShiFangFa-public.apk' if PUBLIC else 'ShiFangFa.apk'
 
 # 打进 assets/web 的文件：index.html 引用的全部同源资源，缺一个就白屏/缺库

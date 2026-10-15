@@ -1208,7 +1208,7 @@ html[data-theme="custom"].cs-dark{color-scheme:dark}
   <h1 class="brand">释放法</h1>
   <div class="looks" id="looks"></div>
   <div class="grow"></div>
-  <button class="upd" id="btn-upd" title="查手机版有没有新版（壳 + 界面一起查）" hidden>检查更新</button>
+  <button class="upd" id="btn-upd" title="查有没有新版（直连 GitHub Releases）" hidden>检查更新</button>
 </div>
 
 <main>
@@ -3736,34 +3736,65 @@ function armConfirm(btn, armedLabel, fn){
   }, 2600);
 }
 
-/* ---------- 手机版「检查更新」 ----------
-   这个按钮只在 App 里出现：网页版每次打开都是云端最新的一份，没有可更新的东西。
-   点一下同时查两样——壳（有新 APK 会问要不要装）和界面内容（自己换，人不用管）；
-   App 查完把结果递回 __atUpd / __atWeb，没有这两个回调，按钮就永远停在「检查中…」。
-   结果只显示在这颗钮自己那一行字上（已是最新／有新版），页面不弹任何横幅——
-   2026-10-14 轮43 用户令「检查更新不要跳出绿色横幅了」。 */
+/* ---------- 手机版「检查更新」（2026-10-15 进阶版） ----------
+   只在点钮时联网：查 api.github.com 上最新 Release 的 tag，跟壳版本比一比。
+   比当前新 → 钮上亮「有新版 vX.Y」，再点一下才开 Releases 页（不自动跳走）；
+   相同 → 「已是最新」；查不到（超时/断网，国内常见）→ 钮退回原样，toast 提示去网盘或 Releases 看。
+   作者自有服务器的更新链已随分发方式退役，这里不再连它，也不上报任何信息。 */
 const IN_APP = (typeof AndroidShell !== "undefined");
-/* aboutUpdateLine/appVer/appCode 已随说明页退役（2026-10-03）：手机更新入口=顶栏「检查更新」按钮 */
+const UPD_RELEASES_URL = "https://github.com/Venus521/sedona-release-method/releases";
+const UPD_LATEST_URL = "https://api.github.com/repos/Venus521/sedona-release-method/releases/latest";
+let updArmed = false;
+function updParts(s){
+  s = String(s || "").trim().replace(/^v/i, "").replace(/-public$/i, "");
+  return s.split(".").map(function(x){ return parseInt(x, 10) || 0; });
+}
+function updNewer(latest, cur){
+  const a = updParts(latest), b = updParts(cur);
+  for(let i = 0; i < 3; i++){ const x = a[i] || 0, y = b[i] || 0; if(x !== y) return x > y; }
+  return false;
+}
 function updLabel(text, cls){
   const b = document.getElementById("btn-upd");
   if(!b) return;
   b.textContent = text;
   b.className = "upd" + (cls ? " "+cls : "");
 }
+function updOpenPage(){
+  try{ location.href = UPD_RELEASES_URL; }
+  catch(e){ try{ window.open(UPD_RELEASES_URL, "_blank"); }catch(e2){} }
+}
 function askUpdate(){
   if(!IN_APP){ toast("网页版打开的就是最新的一份"); return; }
+  if(updArmed){ updArmed = false; updLabel("检查更新", ""); updOpenPage(); return; }
+  let cur = "";
+  try{ cur = AndroidShell.appVersion ? AndroidShell.appVersion() : ""; }catch(e){}
   updLabel("检查中…", "busy");
-  const a = document.getElementById("about-upd");
-  if(a){ a.textContent = "检查中…"; a.disabled = true; }
-  try{
-    AndroidShell.checkUpdate();
-    // 内容那条错开一秒多：两条更新各查各的，别同时抢带宽（App 里也是这么安排的）
-    window.setTimeout(()=>{ try{ AndroidShell.checkContent(); }catch(e){} }, 1200);
-  }catch(e){
+  const fail = function(){
     updLabel("检查更新", "");
-    if(a){ a.textContent = "检查更新"; a.disabled = false; }
-    toast("叫不动手机版：" + (e && e.message || e));
-  }
+    toast("查不到最新版（多半是网络），去网盘或 Releases 页看");
+  };
+  const timeout = new Promise(function(res){ window.setTimeout(function(){ res("timeout"); }, 9000); });
+  Promise.race([
+    fetch(UPD_LATEST_URL, {headers: {"Accept": "application/vnd.github+json"}})
+      .then(function(r){ return r.ok ? r.text() : Promise.reject(0); }),
+    timeout
+  ]).then(function(txt){
+    if(txt === "timeout"){ fail(); return; }
+    let tag = "";
+    try{ tag = JSON.parse(txt).tag_name || ""; }catch(e){}
+    if(!tag){ fail(); return; }
+    const disp = String(tag).replace(/^v/i, "").replace(/-public$/i, "");
+    if(!String(cur).trim() || updNewer(tag, cur)){
+      updArmed = true;
+      updLabel("有新版 " + disp, "armed");
+      toast("有新版 " + disp + "，再点一下去下载页");
+    }else{
+      updLabel("已是最新", "");
+      toast("已是最新（" + String(cur).trim() + "）");
+      window.setTimeout(function(){ if(!updArmed) updLabel("检查更新", ""); }, 2600);
+    }
+  }).catch(fail);
 }
 /* ===== 收获本（可同步） =====
    数据：数组，每条 {id, ts, date, text, mood, goal, tag, updatedAt, del}
