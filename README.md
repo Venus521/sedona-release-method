@@ -16,6 +16,24 @@
 
 ![设置](shots/08-设置.jpg)
 
+## 在线使用（推荐，免安装）
+
+打开 **https://the-release.pages.dev** 就能直接用：免费、无需注册，手机、平板、电脑浏览器都行。记录存在你自己手里，可导出 TXT，也能配坚果云自动同步。
+
+手机：
+
+![手机 · 引导](shots/设备三款_1028/手机-引导.png) ![手机 · 三大想要](shots/设备三款_1028/手机-三大想要.png)
+
+![手机 · 记录](shots/设备三款_1028/手机-记录.png) ![手机 · 我的](shots/设备三款_1028/手机-我的.png)
+
+平板：
+
+<img src="shots/设备三款_1028/平板-引导.png" width="500" alt="平板 · 引导">
+
+电脑：
+
+![电脑 · 引导](shots/设备三款_1028/电脑-引导.png)
+
 ## 下载
 
 到 [Releases](https://github.com/Venus521/sedona-release-method/releases) 下：
